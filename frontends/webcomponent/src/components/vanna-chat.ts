@@ -5,6 +5,7 @@ import { VannaApiClient, ChatStreamChunk } from '../services/api-client.js';
 import { ComponentManager, RichComponent } from './rich-component-system.js';
 import './vanna-status-bar.js';
 import './vanna-progress-tracker.js';
+import './vanna-sidebar.js';
 import './vanna-voice-input.js';
 import './rich-card.js';
 import './rich-task-list.js';
@@ -548,31 +549,10 @@ export class VannaChat extends LitElement {
       }
 
       .sidebar {
-        background: linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, rgba(15, 23, 42, 0.02) 100%);
-        padding: var(--vanna-space-6);
         display: flex;
         flex-direction: column;
-        gap: var(--vanna-space-4);
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: hidden;
         min-height: 0;
-      }
-
-      .sidebar::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      .sidebar::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      .sidebar::-webkit-scrollbar-thumb {
-        background: var(--vanna-outline-default);
-        border-radius: var(--vanna-border-radius-full);
-      }
-
-      :host([theme="dark"]) .sidebar {
-        background: linear-gradient(180deg, rgba(79, 70, 229, 0.22) 0%, rgba(15, 23, 42, 0.45) 100%);
       }
 
       .empty-state {
@@ -1437,7 +1417,9 @@ export class VannaChat extends LitElement {
 
         ${this.showProgress ? html`
           <div class="sidebar">
-            <vanna-progress-tracker theme=${this.theme}></vanna-progress-tracker>
+            <vanna-sidebar theme=${this.theme}>
+              <vanna-progress-tracker slot="tasks" theme=${this.theme}></vanna-progress-tracker>
+            </vanna-sidebar>
           </div>
         ` : ''}
       </div>
