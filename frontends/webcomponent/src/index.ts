@@ -20,6 +20,7 @@ export { VannaChat } from './components/vanna-chat';
 export { VannaMessage } from './components/vanna-message';
 export { VannaStatusBar } from './components/vanna-status-bar';
 export { VannaProgressTracker } from './components/vanna-progress-tracker';
+export { VannaVoiceInput } from './components/vanna-voice-input';
 export { PlotlyChart } from './components/plotly-chart';
 
 // Rich component system

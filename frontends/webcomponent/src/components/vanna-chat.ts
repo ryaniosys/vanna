@@ -5,6 +5,7 @@ import { VannaApiClient, ChatStreamChunk } from '../services/api-client.js';
 import { ComponentManager, RichComponent } from './rich-component-system.js';
 import './vanna-status-bar.js';
 import './vanna-progress-tracker.js';
+import './vanna-voice-input.js';
 import './rich-card.js';
 import './rich-task-list.js';
 import './rich-progress-bar.js';
@@ -861,6 +862,17 @@ export class VannaChat extends LitElement {
     }
   }
 
+  private handleVoiceResult(e: CustomEvent<{ transcript: string; confidence: number }>) {
+    const { transcript } = e.detail;
+    this.currentMessage = transcript;
+    // Focus the input so user can review/edit before sending
+    const input = this.shadowRoot?.querySelector('.message-input') as HTMLTextAreaElement;
+    if (input) {
+      input.value = transcript;
+      input.focus();
+    }
+  }
+
   /**
    * Send a message programmatically (can be called from buttons or external code)
    * Returns a Promise that resolves with success status
@@ -1402,6 +1414,12 @@ export class VannaChat extends LitElement {
                 @keydown=${this.handleKeyPress}
                 rows="1"
               ></textarea>
+              <vanna-voice-input
+                theme=${this.theme}
+                .disabled=${this.disabled}
+                .showStatus=${false}
+                @voice-result=${this.handleVoiceResult}
+              ></vanna-voice-input>
               <button
                 class="send-button"
                 type="button"
