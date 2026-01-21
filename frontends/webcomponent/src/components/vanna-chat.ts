@@ -694,6 +694,7 @@ export class VannaChat extends LitElement {
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) showProgress = true;
   @property({ type: Boolean }) allowMinimize = true;
+  @property({ type: Boolean, attribute: 'voice-auto-send' }) voiceAutoSend = true;
   @property({ reflect: true }) theme = 'light';
   @property({ attribute: 'api-base' }) apiBaseUrl = '';
   @property({ attribute: 'sse-endpoint' }) sseEndpoint = '/api/vanna/v2/chat_sse';
@@ -846,11 +847,18 @@ export class VannaChat extends LitElement {
   private handleVoiceResult(e: CustomEvent<{ transcript: string; confidence: number }>) {
     const { transcript } = e.detail;
     this.currentMessage = transcript;
-    // Focus the input so user can review/edit before sending
+
     const input = this.shadowRoot?.querySelector('.message-input') as HTMLTextAreaElement;
     if (input) {
       input.value = transcript;
-      input.focus();
+    }
+
+    if (this.voiceAutoSend && transcript.trim()) {
+      // Auto-send the voice input immediately
+      this.sendMessage();
+    } else {
+      // Focus the input so user can review/edit before sending
+      input?.focus();
     }
   }
 
