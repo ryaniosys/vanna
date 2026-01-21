@@ -62,18 +62,19 @@ export class VannaChat extends LitElement {
       }
 
       :host(.maximized) {
-        position: fixed;
-        top: var(--vanna-space-6);
-        left: var(--vanna-space-6);
-        right: var(--vanna-space-6);
-        bottom: var(--vanna-space-6);
-        max-width: none;
-        width: auto;
-        margin: 0;
-        z-index: var(--vanna-z-modal);
-        border-radius: var(--vanna-border-radius-xl);
-        transform: none;
-        box-shadow: var(--vanna-shadow-2xl);
+        position: fixed !important;
+        top: var(--vanna-space-6) !important;
+        left: var(--vanna-space-6) !important;
+        right: var(--vanna-space-6) !important;
+        bottom: var(--vanna-space-6) !important;
+        max-width: none !important;
+        width: calc(100vw - var(--vanna-space-6) * 2) !important;
+        height: calc(100vh - var(--vanna-space-6) * 2) !important;
+        margin: 0 !important;
+        z-index: var(--vanna-z-modal) !important;
+        border-radius: var(--vanna-border-radius-xl) !important;
+        transform: none !important;
+        box-shadow: var(--vanna-shadow-2xl) !important;
       }
 
       :host(.maximized):hover {
@@ -138,8 +139,8 @@ export class VannaChat extends LitElement {
       }
 
       :host(.maximized) .chat-layout {
-        height: calc(100vh - 48px);
-        max-height: calc(100vh - 48px);
+        height: 100%;
+        max-height: 100%;
       }
 
       .chat-layout.compact {
@@ -760,13 +761,13 @@ export class VannaChat extends LitElement {
     const richContainer = this.shadowRoot?.querySelector('.rich-components-container') as HTMLElement;
     if (richContainer) {
       this.componentManager = new ComponentManager(richContainer);
-      
+
       // Watch for changes in the rich components container to manage empty state
       this.componentObserver = new MutationObserver(() => {
         // Update empty state visibility
         this.updateEmptyState();
       });
-      
+
       this.componentObserver.observe(richContainer, {
         childList: true,
         subtree: true,
@@ -810,7 +811,7 @@ export class VannaChat extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    
+
     // Clean up mutation observer
     if (this.componentObserver) {
       this.componentObserver.disconnect();
@@ -1120,7 +1121,7 @@ export class VannaChat extends LitElement {
     // Handle rich components via ComponentManager
     if (chunk.rich && this.componentManager) {
       console.log('Processing rich component via ComponentManager:', chunk.rich); // Debug log
-      
+
       if (chunk.rich.id && chunk.rich.lifecycle) {
         // Standard rich component with lifecycle
         const component = chunk.rich as RichComponent;
@@ -1145,7 +1146,7 @@ export class VannaChat extends LitElement {
         };
         this.componentManager.processUpdate(update);
       }
-      
+
       return;
     }
 
@@ -1236,7 +1237,7 @@ export class VannaChat extends LitElement {
   private updateEmptyState() {
     const emptyState = this.shadowRoot?.querySelector('#empty-state') as HTMLElement;
     const richContainer = this.shadowRoot?.querySelector('.rich-components-container') as HTMLElement;
-    
+
     if (emptyState && richContainer) {
       // Show empty state if rich container has no children
       const hasContent = richContainer.children.length > 0;
@@ -1250,10 +1251,10 @@ export class VannaChat extends LitElement {
   private updateScrollIndicator() {
     const messagesContainer = this.shadowRoot?.querySelector('.chat-messages');
     if (!messagesContainer) return;
-    
+
     // Check if there's content scrolled above
     const hasScrolledContent = messagesContainer.scrollTop > 10;
-    
+
     // Update scroll indicator class
     messagesContainer.classList.toggle('has-scroll', hasScrolledContent);
   }
@@ -1265,7 +1266,7 @@ export class VannaChat extends LitElement {
   scrollToLastMessage() {
     const messagesContainer = this.shadowRoot?.querySelector('.chat-messages');
     const richContainer = this.shadowRoot?.querySelector('.rich-components-container');
-    
+
     if (!messagesContainer || !richContainer) return;
 
     // Get the last child element (the most recently added component)
@@ -1274,7 +1275,7 @@ export class VannaChat extends LitElement {
 
     // Scroll so the top of the last component is visible
     lastComponent.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
+
     // Update scroll indicator after scrolling
     setTimeout(() => this.updateScrollIndicator(), 100);
   }
