@@ -141,10 +141,56 @@ export class VannaChat extends LitElement {
       :host(.maximized) .chat-layout {
         height: 100%;
         max-height: 100%;
+        grid-template-columns: minmax(0, 1fr) auto var(--sidebar-width, 300px);
       }
 
       .chat-layout.compact {
         grid-template-columns: 1fr;
+      }
+
+      /* Resize Handle */
+      .resize-handle {
+        display: none;
+      }
+
+      :host(.maximized) .resize-handle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 8px;
+        margin: 0 -4px;
+        cursor: col-resize;
+        background: transparent;
+        z-index: 10;
+        position: relative;
+        transition: background var(--vanna-duration-150) ease;
+      }
+
+      :host(.maximized) .resize-handle::before {
+        content: '';
+        width: 4px;
+        height: 40px;
+        border-radius: 2px;
+        background: var(--vanna-outline-default);
+        opacity: 0;
+        transition: opacity var(--vanna-duration-150) ease, background var(--vanna-duration-150) ease;
+      }
+
+      :host(.maximized) .resize-handle:hover::before,
+      :host(.maximized) .resize-handle.dragging::before {
+        opacity: 1;
+      }
+
+      :host(.maximized) .resize-handle.dragging::before {
+        background: var(--vanna-accent-primary-default);
+      }
+
+      :host(.maximized) .resize-handle:hover {
+        background: rgba(99, 102, 241, 0.08);
+      }
+
+      :host(.maximized) .resize-handle.dragging {
+        background: rgba(99, 102, 241, 0.12);
       }
 
       .chat-main {
@@ -707,6 +753,8 @@ export class VannaChat extends LitElement {
   @state() private status: 'idle' | 'working' | 'error' | 'success' = 'idle';
   @state() private statusMessage = '';
   @state() private statusDetail = '';
+  @state() private sidebarWidth = 300;
+  @state() private isResizing = false;
   private _windowState: 'normal' | 'maximized' | 'minimized' = 'normal';
 
   @property({ reflect: false })
@@ -726,6 +774,8 @@ export class VannaChat extends LitElement {
   private conversationId: string;
   private componentManager: ComponentManager | null = null;
   private componentObserver: MutationObserver | null = null;
+  private resizeStartX = 0;
+  private resizeStartWidth = 0;
 
   constructor() {
     super();
@@ -1240,6 +1290,70 @@ export class VannaChat extends LitElement {
   }
 
   /**
+   * Handle resize start
+   */
+  private handleResizeStart = (e: MouseEvent) => {
+    if (this._windowState !== 'maximized') return;
+
+    e.preventDefault();
+    this.isResizing = true;
+    this.resizeStartX = e.clientX;
+    this.resizeStartWidth = this.sidebarWidth;
+
+    // Add listeners for mouse move and up
+    document.addEventListener('mousemove', this.handleResizeMove);
+    document.addEventListener('mouseup', this.handleResizeEnd);
+
+    // Add dragging class to resize handle
+    const resizeHandle = this.shadowRoot?.querySelector('.resize-handle');
+    resizeHandle?.classList.add('dragging');
+
+    // Prevent text selection during drag
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  };
+
+  /**
+   * Handle resize move
+   */
+  private handleResizeMove = (e: MouseEvent) => {
+    if (!this.isResizing) return;
+
+    // Calculate delta (negative because dragging left increases sidebar width)
+    const delta = this.resizeStartX - e.clientX;
+    let newWidth = this.resizeStartWidth + delta;
+
+    // Clamp width between min and max values
+    const minWidth = 200;
+    const maxWidth = Math.min(600, window.innerWidth * 0.4);
+    newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+
+    this.sidebarWidth = newWidth;
+
+    // Update CSS custom property for grid
+    this.style.setProperty('--sidebar-width', `${newWidth}px`);
+  };
+
+  /**
+   * Handle resize end
+   */
+  private handleResizeEnd = () => {
+    this.isResizing = false;
+
+    // Remove listeners
+    document.removeEventListener('mousemove', this.handleResizeMove);
+    document.removeEventListener('mouseup', this.handleResizeEnd);
+
+    // Remove dragging class
+    const resizeHandle = this.shadowRoot?.querySelector('.resize-handle');
+    resizeHandle?.classList.remove('dragging');
+
+    // Restore user select and cursor
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+  };
+
+  /**
    * Update empty state visibility based on whether there are components
    */
   private updateEmptyState() {
@@ -1425,6 +1539,7 @@ export class VannaChat extends LitElement {
         </div>
 
         ${this.showProgress ? html`
+          <div class="resize-handle" @mousedown=${this.handleResizeStart}></div>
           <div class="sidebar">
             <vanna-sidebar theme=${this.theme}>
               <vanna-progress-tracker slot="tasks" theme=${this.theme}></vanna-progress-tracker>
