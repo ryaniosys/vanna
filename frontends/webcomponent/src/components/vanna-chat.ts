@@ -272,6 +272,33 @@ export class VannaChat extends LitElement {
         border: 1px solid rgba(255, 255, 255, 0.3);
       }
 
+      .chat-logo {
+        height: 44px;
+        width: auto;
+        max-width: 160px;
+        border-radius: var(--vanna-border-radius-lg);
+        object-fit: contain;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .chat-logo-text {
+        display: flex;
+        align-items: center;
+        height: 44px;
+        padding: 0 var(--vanna-space-4);
+        border-radius: var(--vanna-border-radius-lg);
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+        color: var(--chat-primary-foreground);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        white-space: nowrap;
+      }
+
       .header-text {
         display: flex;
         flex-direction: column;
@@ -737,6 +764,8 @@ export class VannaChat extends LitElement {
 
   @property() title = 'Vanna AI Chat';
   @property() placeholder = 'Ask me anything...';
+  @property({ attribute: 'logo' }) logo = '';
+  @property({ attribute: 'logo-text' }) logoText = '';
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) showProgress = true;
   @property({ type: Boolean }) allowMinimize = true;
@@ -1443,7 +1472,12 @@ export class VannaChat extends LitElement {
           <div class="chat-header">
             <div class="header-top">
               <div class="header-left">
-                <div class="chat-avatar" aria-hidden="true">${this.getTitleInitials()}</div>
+                ${this.logo
+        ? html`<img class="chat-logo" src="${this.logo}" alt="Logo" />`
+        : this.logoText
+          ? html`<span class="chat-logo-text">${this.logoText}</span>`
+          : html`<div class="chat-avatar" aria-hidden="true">${this.getTitleInitials()}</div>`
+      }
                 <div class="header-text">
                   <h2 class="chat-title">${this.title}</h2>
                 </div>
