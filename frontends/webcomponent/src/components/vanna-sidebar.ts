@@ -224,28 +224,47 @@ export class VannaSidebar extends LitElement {
         color: var(--vanna-accent-negative-default);
       }
 
+      /* Preview width expansion animation */
+      @keyframes previewExpand {
+        from {
+          width: 0%;
+          opacity: 0;
+        }
+        to {
+          width: 100%;
+          opacity: 1;
+        }
+      }
+
       .preview-body {
         flex: 1;
+        width: 100%;
         overflow: auto;
         background: var(--vanna-background-root);
         border-radius: var(--vanna-border-radius-md);
         border: 1px solid var(--vanna-outline-dimmer);
+        box-sizing: border-box;
+        animation: previewExpand 300ms ease-out forwards;
       }
 
       .preview-text {
+        width: 100%;
         padding: var(--vanna-space-4);
         font-size: 13px;
         line-height: 1.6;
         color: var(--vanna-foreground-default);
         white-space: pre-wrap;
         word-break: break-word;
+        box-sizing: border-box;
       }
 
       .preview-html {
+        width: 100%;
         padding: var(--vanna-space-4);
         font-size: 13px;
         line-height: 1.6;
         color: var(--vanna-foreground-default);
+        box-sizing: border-box;
       }
 
       .preview-iframe {
@@ -282,6 +301,10 @@ export class VannaSidebar extends LitElement {
   @property({ type: Boolean })
   hasPreview = false;
 
+  /** Animation key to force re-render and trigger animation */
+  @state()
+  private _animationKey = 0;
+
   /** Available tabs */
   @state()
   private _tabs: SidebarTab[] = [
@@ -317,6 +340,8 @@ export class VannaSidebar extends LitElement {
   public setPreviewContent(content: PreviewContent) {
     this.previewContent = content;
     this.hasPreview = true;
+    // Increment animation key to force a fresh element and trigger animation
+    this._animationKey++;
 
     this.dispatchEvent(new CustomEvent('preview-loaded', {
       detail: content,
@@ -404,7 +429,7 @@ export class VannaSidebar extends LitElement {
           </button>
         </div>
       ` : ''}
-      <div class="preview-body">
+      <div class="preview-body" key=${this._animationKey}>
         ${type === 'text' ? html`
           <div class="preview-text">${content}</div>
         ` : type === 'html' ? html`

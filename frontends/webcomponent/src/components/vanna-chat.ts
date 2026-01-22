@@ -1354,7 +1354,8 @@ export class VannaChat extends LitElement {
 
     // Clamp width between min and max values
     const minWidth = 200;
-    const maxWidth = Math.min(600, window.innerWidth * 0.4);
+    // Max width is 60% of window width (manual resize limit)
+    const maxWidth = Math.floor(window.innerWidth * 0.6);
     newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
 
     this.sidebarWidth = newWidth;
@@ -1380,6 +1381,24 @@ export class VannaChat extends LitElement {
     // Restore user select and cursor
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
+  };
+
+  /**
+   * Handle preview loaded event - auto-expand sidebar to 50% max width
+   * Only triggers in maximized mode
+   */
+  private handlePreviewLoaded = () => {
+    // Only auto-resize in maximized mode
+    if (this._windowState !== 'maximized') return;
+
+    // Calculate 40% of window width as the target
+    const targetWidth = Math.floor(window.innerWidth * 0.4);
+
+    // Only expand if current width is less than target
+    if (this.sidebarWidth < targetWidth) {
+      this.sidebarWidth = targetWidth;
+      this.style.setProperty('--sidebar-width', `${targetWidth}px`);
+    }
   };
 
   /**
@@ -1575,7 +1594,7 @@ export class VannaChat extends LitElement {
         ${this.showProgress ? html`
           <div class="resize-handle" @mousedown=${this.handleResizeStart}></div>
           <div class="sidebar">
-            <vanna-sidebar theme=${this.theme}>
+            <vanna-sidebar theme=${this.theme} @preview-loaded=${this.handlePreviewLoaded}>
               <vanna-progress-tracker slot="tasks" theme=${this.theme}></vanna-progress-tracker>
             </vanna-sidebar>
           </div>
