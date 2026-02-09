@@ -12,7 +12,6 @@ export const vannaDesignTokens = css`
 
     /* Color Palette - Light mode (default) */
     --vanna-background-root: rgb(255, 255, 255);
-    --vanna-background-default: rgb(231, 225, 207);
     --vanna-background-higher: rgb(244, 246, 248);
     --vanna-background-highest: rgb(229, 231, 235);
     --vanna-background-subtle: rgb(248, 250, 252);
@@ -21,12 +20,6 @@ export const vannaDesignTokens = css`
     --vanna-foreground-default: rgb(2, 61, 96);
     --vanna-foreground-dimmer: rgb(71, 85, 105);
     --vanna-foreground-dimmest: rgb(100, 116, 139);
-
-    --vanna-accent-primary-default: rgb(21, 168, 168);
-    --vanna-accent-primary-stronger: rgb(2, 61, 96);
-    --vanna-accent-primary-strongest: rgb(2, 61, 96);
-    --vanna-accent-primary-subtle: rgba(21, 168, 168, 0.1);
-    --vanna-accent-primary-hover: rgb(21, 168, 168);
 
     --vanna-accent-positive-default: rgb(21, 168, 168);
     --vanna-accent-positive-stronger: rgb(2, 61, 96);

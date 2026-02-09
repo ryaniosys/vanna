@@ -167,7 +167,7 @@ export class VannaStatusBar extends LitElement {
         width: 12px;
         height: 12px;
         border-radius: var(--vanna-border-radius-full);
-        background: var(--vanna-accent-primary-default);
+        background: var(--vanna-accent-positive-default);
         flex-shrink: 0;
         box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.15);
       }
