@@ -78,6 +78,11 @@ class PlotlyChartGenerator:
             fig = self._create_bar_chart(
                 df, categorical_cols[0], numeric_cols[0], title
             )
+        elif len(numeric_cols) == 1 and len(categorical_cols) >= 2:
+            # Multiple categorical + one numeric: grouped bar using actual values
+            fig = self._create_grouped_bar_with_values(
+                df, categorical_cols, numeric_cols[0], title
+            )
         elif len(numeric_cols) == 2:
             # Two numeric columns: scatter plot
             fig = self._create_scatter_plot(df, numeric_cols[0], numeric_cols[1], title)
@@ -85,7 +90,7 @@ class PlotlyChartGenerator:
             # Multiple numeric columns: correlation heatmap
             fig = self._create_correlation_heatmap(df, numeric_cols, title)
         elif len(categorical_cols) >= 2:
-            # Multiple categorical: grouped bar chart
+            # Multiple categorical (no numeric): grouped bar by count
             fig = self._create_grouped_bar_chart(df, categorical_cols, title)
         else:
             # Fallback: show first two columns as scatter/bar
@@ -218,6 +223,31 @@ class PlotlyChartGenerator:
             yaxis_title="Value",
             hovermode="x unified",
         )
+        self._apply_standard_layout(fig)
+        return fig
+
+    def _create_grouped_bar_with_values(
+        self,
+        df: pd.DataFrame,
+        categorical_cols: List[str],
+        value_col: str,
+        title: str,
+    ) -> go.Figure:
+        """Create a grouped bar chart using an existing numeric column as values.
+
+        Used when the DataFrame has 2+ categorical columns and 1 numeric column,
+        so the numeric column represents actual values (not row counts).
+        """
+        fig = px.bar(
+            df,
+            x=categorical_cols[0],
+            y=value_col,
+            color=categorical_cols[1] if len(categorical_cols) >= 2 else None,
+            title=title,
+            barmode="group",
+            color_discrete_sequence=self.COLOR_PALETTE,
+        )
+        fig.update_layout(xaxis_title=categorical_cols[0], yaxis_title=value_col)
         self._apply_standard_layout(fig)
         return fig
 

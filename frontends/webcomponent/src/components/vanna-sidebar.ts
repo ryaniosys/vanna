@@ -287,7 +287,7 @@ export class VannaSidebar extends LitElement {
 
   /** Currently active tab ID */
   @property({ type: String })
-  activeTab = 'tasks';
+  activeTab = 'preview';
 
   /** Preview content to display */
   @property({ type: Object })
@@ -301,6 +301,10 @@ export class VannaSidebar extends LitElement {
   @property({ type: Boolean })
   hasPreview = false;
 
+  /** Badge count for artifacts tab */
+  @property({ type: Number })
+  artifactCount = 0;
+
   /** Animation key to force re-render and trigger animation */
   @state()
   private _animationKey = 0;
@@ -308,15 +312,20 @@ export class VannaSidebar extends LitElement {
   /** Available tabs */
   @state()
   private _tabs: SidebarTab[] = [
-    {
-      id: 'tasks',
-      label: 'Tasks',
-      icon: html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>`
-    },
+    // {
+    //   id: 'tasks',
+    //   label: 'Tasks',
+    //   icon: html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>`
+    // },
     {
       id: 'preview',
       label: 'Preview',
       icon: html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`
+    },
+    {
+      id: 'artifacts',
+      label: 'Artifacts',
+      icon: html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>`
     }
   ];
 
@@ -373,15 +382,18 @@ export class VannaSidebar extends LitElement {
 
   private _handlePreviewClose() {
     this.clearPreview();
-    this.switchTab('tasks');
+    this.switchTab('preview');
   }
 
   private _renderTabButton(tab: SidebarTab) {
     const isActive = this.activeTab === tab.id;
-    const badge = tab.id === 'tasks' && this.taskCount > 0
-      ? html`<span class="tab-badge">${this.taskCount}</span>`
-      : tab.id === 'preview' && this.hasPreview
-        ? html`<span class="tab-badge">1</span>`
+    // const badge = tab.id === 'tasks' && this.taskCount > 0
+    //   ? html`<span class="tab-badge">${this.taskCount}</span>`
+    //   : ...
+    const badge = tab.id === 'preview' && this.hasPreview
+      ? html`<span class="tab-badge">1</span>`
+      : tab.id === 'artifacts' && this.artifactCount > 0
+        ? html`<span class="tab-badge">${this.artifactCount}</span>`
         : '';
 
     return html`
@@ -448,16 +460,15 @@ export class VannaSidebar extends LitElement {
       </div>
 
       <div class="tab-content">
+        <!-- Tasks tab panel (hidden - tab removed)
         <div
           class="tab-panel ${this.activeTab === 'tasks' ? 'active' : ''}"
           role="tabpanel"
           aria-labelledby="tab-tasks"
         >
-          <slot name="tasks">
-            <!-- Default: progress tracker will be slotted here -->
-          </slot>
+          <slot name="tasks"></slot>
         </div>
-
+        -->
         <div
           class="tab-panel ${this.activeTab === 'preview' ? 'active' : ''}"
           role="tabpanel"
@@ -465,6 +476,22 @@ export class VannaSidebar extends LitElement {
         >
           <slot name="preview">
             ${this._renderPreviewContent()}
+          </slot>
+        </div>
+
+        <div
+          class="tab-panel ${this.activeTab === 'artifacts' ? 'active' : ''}"
+          role="tabpanel"
+          aria-labelledby="tab-artifacts"
+        >
+          <slot name="artifacts">
+            <div class="preview-empty">
+              <svg class="preview-empty-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+              </svg>
+              <div class="preview-empty-text">No saved artifacts</div>
+              <div class="preview-empty-hint">Save a chart from the chat to see it here</div>
+            </div>
           </slot>
         </div>
       </div>
