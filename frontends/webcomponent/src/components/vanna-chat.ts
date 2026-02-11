@@ -5,7 +5,7 @@ import { VannaApiClient, ChatStreamChunk } from '../services/api-client.js';
 import { ComponentManager, RichComponent } from './rich-component-system.js';
 import './vanna-status-bar.js';
 import './vanna-progress-tracker.js';
-import './vanna-sidebar.js';
+import { VannaSidebar } from './vanna-sidebar.js';
 import './vanna-voice-input.js';
 import './rich-card.js';
 import './rich-task-list.js';
@@ -142,6 +142,11 @@ export class VannaChat extends LitElement {
         height: 100%;
         max-height: 100%;
         grid-template-columns: minmax(0, 1fr) auto var(--sidebar-width, 300px);
+        transition: grid-template-columns 350ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      :host(.maximized) .chat-layout.resizing {
+        transition: none;
       }
 
       .chat-layout.compact {
@@ -1088,6 +1093,13 @@ export class VannaChat extends LitElement {
       e.preventDefault();
     }
     this.windowState = 'maximized';
+
+    // Auto-switch to artifacts tab if no preview but artifacts exist
+    const sidebar = this.shadowRoot?.querySelector('vanna-sidebar') as VannaSidebar;
+    if (sidebar && !sidebar.hasPreview && sidebar.artifactCount > 0) {
+      sidebar.switchTab('artifacts');
+    }
+
     this.dispatchEvent(new CustomEvent('window-state-changed', {
       detail: { state: 'maximized' },
       bubbles: true,
@@ -1337,6 +1349,10 @@ export class VannaChat extends LitElement {
     const resizeHandle = this.shadowRoot?.querySelector('.resize-handle');
     resizeHandle?.classList.add('dragging');
 
+    // Disable grid transition during manual resize
+    const chatLayout = this.shadowRoot?.querySelector('.chat-layout');
+    chatLayout?.classList.add('resizing');
+
     // Prevent text selection during drag
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'col-resize';
@@ -1378,6 +1394,10 @@ export class VannaChat extends LitElement {
     const resizeHandle = this.shadowRoot?.querySelector('.resize-handle');
     resizeHandle?.classList.remove('dragging');
 
+    // Re-enable grid transition
+    const chatLayout = this.shadowRoot?.querySelector('.chat-layout');
+    chatLayout?.classList.remove('resizing');
+
     // Restore user select and cursor
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
@@ -1398,6 +1418,22 @@ export class VannaChat extends LitElement {
     if (this.sidebarWidth < targetWidth) {
       this.sidebarWidth = targetWidth;
       this.style.setProperty('--sidebar-width', `${targetWidth}px`);
+    }
+  };
+
+  /**
+   * Handle tab change event - auto-expand sidebar when switching to artifacts tab
+   */
+  private handleTabChange = (e: CustomEvent) => {
+    if (this._windowState !== 'maximized') return;
+    const { tabId } = e.detail;
+    const sidebar = this.shadowRoot?.querySelector('vanna-sidebar') as VannaSidebar;
+    if (tabId === 'artifacts' && sidebar?.artifactCount > 0) {
+      const targetWidth = 750; // 2.5x default 300px
+      if (this.sidebarWidth < targetWidth) {
+        this.sidebarWidth = targetWidth;
+        this.style.setProperty('--sidebar-width', `${targetWidth}px`);
+      }
     }
   };
 
@@ -1594,7 +1630,7 @@ export class VannaChat extends LitElement {
         ${this.showProgress ? html`
           <div class="resize-handle" @mousedown=${this.handleResizeStart}></div>
           <div class="sidebar">
-            <vanna-sidebar theme=${this.theme} @preview-loaded=${this.handlePreviewLoaded}>
+            <vanna-sidebar theme=${this.theme} @preview-loaded=${this.handlePreviewLoaded} @tab-change=${this.handleTabChange}>
               <vanna-progress-tracker slot="tasks" theme=${this.theme}></vanna-progress-tracker>
             </vanna-sidebar>
           </div>

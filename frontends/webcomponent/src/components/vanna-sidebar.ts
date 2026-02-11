@@ -140,6 +140,18 @@ export class VannaSidebar extends LitElement {
       .tab-panel.active {
         display: flex;
         flex-direction: column;
+        animation: tabPanelReveal 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      @keyframes tabPanelReveal {
+        from {
+          opacity: 0;
+          transform: translateX(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
       }
 
       .tab-panel::-webkit-scrollbar {
