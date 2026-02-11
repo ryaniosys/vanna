@@ -1094,10 +1094,20 @@ export class VannaChat extends LitElement {
     }
     this.windowState = 'maximized';
 
-    // Auto-switch to artifacts tab if no preview but artifacts exist
+    // Auto-switch to artifacts tab if no preview but artifacts exist, and expand
     const sidebar = this.shadowRoot?.querySelector('vanna-sidebar') as VannaSidebar;
     if (sidebar && !sidebar.hasPreview && sidebar.artifactCount > 0) {
-      sidebar.switchTab('artifacts');
+      sidebar.switchTab('artifacts'); // no-op if already active
+      // Defer expansion until maximized layout is rendered so CSS transition fires
+      this.updateComplete.then(() => {
+        requestAnimationFrame(() => {
+          const targetWidth = 750;
+          if (this.sidebarWidth < targetWidth) {
+            this.sidebarWidth = targetWidth;
+            this.style.setProperty('--sidebar-width', `${targetWidth}px`);
+          }
+        });
+      });
     }
 
     this.dispatchEvent(new CustomEvent('window-state-changed', {
@@ -1429,11 +1439,14 @@ export class VannaChat extends LitElement {
     const { tabId } = e.detail;
     const sidebar = this.shadowRoot?.querySelector('vanna-sidebar') as VannaSidebar;
     if (tabId === 'artifacts' && sidebar?.artifactCount > 0) {
-      const targetWidth = 750; // 2.5x default 300px
-      if (this.sidebarWidth < targetWidth) {
-        this.sidebarWidth = targetWidth;
-        this.style.setProperty('--sidebar-width', `${targetWidth}px`);
-      }
+      // Defer so the maximized layout is painted and CSS transition can fire
+      requestAnimationFrame(() => {
+        const targetWidth = 750;
+        if (this.sidebarWidth < targetWidth) {
+          this.sidebarWidth = targetWidth;
+          this.style.setProperty('--sidebar-width', `${targetWidth}px`);
+        }
+      });
     }
   };
 
